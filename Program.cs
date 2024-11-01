@@ -1,7 +1,9 @@
 ﻿using System;
-using HatHatul;
+using HatHatulGame;
 using MySql.Data.MySqlClient;
 using System.Collections.Generic;
+using GameSquad;
+using System.Xml.Linq;
 
 namespace HatHatulGame
 {
@@ -11,7 +13,6 @@ namespace HatHatulGame
         {
             string addPlayerChoice;
             List<Player> playerList = new List<Player>();
-            Console.WriteLine("Players counht: " + playerList.Count);
             Console.WriteLine("Welcome to HatHatul Written in C#!, Press any key to play!");
             Console.ReadLine();
             do
@@ -42,21 +43,53 @@ namespace HatHatulGame
             foreach (Player player in playerList)
             {
                 string actionChoice;
+                bool retryAction = false;
                 do
                 {
                     Player.clearConsole();
-                    Console.WriteLine($"Its {player.Name} Turn!, what will you do, Draw OR Reveal?" );
+                    Console.WriteLine($"Its {player.Name} Turn!, what will you do, 'draw', 'reveal' or 'top card'?" );
                     actionChoice = Console.ReadLine().ToLower();
                     Console.WriteLine($"{player.Name} have chosen {actionChoice}");
                     if(actionChoice == "draw")
                     {
-                        player.Draw();
+                        int randomCard = player.Draw();
+                        string replaceOrDrop;
+                        do
+                        {
+                            Console.WriteLine(player.Name + $", You have drawn the card {randomCard}");
+                            Console.WriteLine("Would you like to 'replace' it with on of your current cards or 'drop' it to be the top card?");
+                            replaceOrDrop = Console.ReadLine().ToLower();
+                            Player.clearConsole();
+                        } while ( replaceOrDrop != "drop" && replaceOrDrop != "replace");
+                        if (replaceOrDrop == "replace")
+                        {
+                            player.Replace(randomCard);
+                        }
+                        else if (replaceOrDrop == "drop")
+                        {
+                            player.Drop(randomCard);
+                        }
                     } else if (actionChoice == "reveal")
                     {
                         player.Reveal();
+                    } else if (actionChoice == "top card")
+                    {
+                        if(Player.TopCard != null)
+                        {
+                            player.Replace(int.Parse(Player.TopCard));
+                        } else
+                        {
+                            Player.clearConsole();
+                            Console.WriteLine("There is no top card at the moment!");
+                            Console.ReadLine();
+                            retryAction = true;
+                        }
+                    } else
+                    {
+                        retryAction = true;
                     }
 
-                } while(actionChoice != "draw" && actionChoice != "reveal");
+                } while(retryAction);
             }
         }
     }
