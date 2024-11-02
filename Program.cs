@@ -13,6 +13,7 @@ namespace HatHatulGame
         {
             string addPlayerChoice;
             List<Player> playerList = new List<Player>();
+            Dictionary<string, int> sumDictionary = new Dictionary<string, int>();
             Console.WriteLine("Welcome to HatHatul Written in C#!, Press any key to play!");
             Console.ReadLine();
             do
@@ -39,57 +40,75 @@ namespace HatHatulGame
                 Console.ReadLine();
             }
 
-
-            foreach (Player player in playerList)
+            while (Player.GameRunning)
             {
-                string actionChoice;
-                bool retryAction = false;
-                do
+                foreach (Player player in playerList)
                 {
-                    Player.clearConsole();
-                    Console.WriteLine($"Its {player.Name} Turn!, what will you do, 'draw', 'reveal' or 'top card'?" );
-                    actionChoice = Console.ReadLine().ToLower();
-                    Console.WriteLine($"{player.Name} have chosen {actionChoice}");
-                    if(actionChoice == "draw")
+                    if (!Player.GameRunning)
                     {
-                        int randomCard = player.Draw();
-                        string replaceOrDrop;
-                        do
+                        break;
+                    }
+                    string actionChoice;
+                    bool retryAction = false;
+                    do
+                    {
+                        Player.clearConsole();
+                        Console.WriteLine($"Its {player.Name} Turn!, what will you do, 'draw', 'reveal' or 'top card'?");
+                        actionChoice = Console.ReadLine().ToLower();
+                        Console.WriteLine($"{player.Name} have chosen {actionChoice}");
+                        if (actionChoice == "draw")
                         {
-                            Console.WriteLine(player.Name + $", You have drawn the card {randomCard}");
-                            Console.WriteLine("Would you like to 'replace' it with on of your current cards or 'drop' it to be the top card?");
-                            replaceOrDrop = Console.ReadLine().ToLower();
-                            Player.clearConsole();
-                        } while ( replaceOrDrop != "drop" && replaceOrDrop != "replace");
-                        if (replaceOrDrop == "replace")
-                        {
-                            player.Replace(randomCard);
+                            int randomCard = player.Draw();
+                            string replaceOrDrop;
+                            do
+                            {
+                                Console.WriteLine(player.Name + $", You have drawn the card {randomCard}");
+                                Console.WriteLine("Would you like to 'replace' it with on of your current cards or 'drop' it to be the top card?");
+                                replaceOrDrop = Console.ReadLine().ToLower();
+                                Player.clearConsole();
+                            } while (replaceOrDrop != "drop" && replaceOrDrop != "replace");
+                            if (replaceOrDrop == "replace")
+                            {
+                                player.Replace(randomCard);
+                            }
+                            else if (replaceOrDrop == "drop")
+                            {
+                                player.Drop(randomCard);
+                            }
                         }
-                        else if (replaceOrDrop == "drop")
+                        else if (actionChoice == "reveal")
                         {
-                            player.Drop(randomCard);
+                            Player.GameRunning = false;
+                            foreach(Player playerToReveal in playerList)
+                            {
+                                int playerSum = playerToReveal.Reveal();
+                                sumDictionary[playerToReveal.Name] = playerSum;
+                            }
+                            int highestSum = sumDictionary.Values.Min();
+                            var highestSumPlayer = sumDictionary.FirstOrDefault(x => x.Value == highestSum).Key;
+                            Console.WriteLine(highestSumPlayer + " Won with the lowest sum: " + highestSum + " congratulations!");
                         }
-                    } else if (actionChoice == "reveal")
-                    {
-                        player.Reveal();
-                    } else if (actionChoice == "top card")
-                    {
-                        if(Player.TopCard != null)
+                        else if (actionChoice == "top card")
                         {
-                            player.Replace(int.Parse(Player.TopCard));
-                        } else
+                            if (Player.TopCard != null)
+                            {
+                                player.Replace(int.Parse(Player.TopCard));
+                            }
+                            else
+                            {
+                                Player.clearConsole();
+                                Console.WriteLine("There is no top card at the moment!");
+                                Console.ReadLine();
+                                retryAction = true;
+                            }
+                        }
+                        else
                         {
-                            Player.clearConsole();
-                            Console.WriteLine("There is no top card at the moment!");
-                            Console.ReadLine();
                             retryAction = true;
                         }
-                    } else
-                    {
-                        retryAction = true;
-                    }
 
-                } while(retryAction);
+                    } while (retryAction);
+                }
             }
         }
     }

@@ -50,13 +50,20 @@ namespace GameSquad
         public void Replace(int card)
         {
 
-            clearConsole();
             int cardToReplaceIndex;
+            bool retryReplace = false;
             do
             {
+                clearConsole();
                 Console.WriteLine("Select the card index in hand you want to replace (1-4)");
-                cardToReplaceIndex = Convert.ToInt32(Console.ReadLine());
-            } while(cardToReplaceIndex < 0 || cardToReplaceIndex > 3);
+                if(!int.TryParse(Console.ReadLine(), out cardToReplaceIndex))
+                {
+                    retryReplace = true;
+                } else
+                {
+                    break;
+                }
+            } while(cardToReplaceIndex < 1 || cardToReplaceIndex > 4 || retryReplace);
             int cardToReplace = cards[cardToReplaceIndex - 1];
             cards[cardToReplaceIndex - 1] = card; // replacing the card in the players deck
             TopCard = cardToReplace.ToString(); // setting the top card to be the thrown card from the player's deck
@@ -73,10 +80,17 @@ namespace GameSquad
             Console.ReadLine();
         }
 
-        public void Reveal()
+        public int Reveal()
         {
-            Console.WriteLine(name + " chose to reveal cards, everyone show their cards!");
-
+            GameRunning = false;
+            Console.WriteLine(name + " Cards :\n");
+            for(int i = 0; i < cards.Count; i++)
+            {
+                Console.WriteLine(cards[i] + "\n");
+            }
+            Console.WriteLine(name + " Sum: " + cards.Sum());
+            Console.ReadLine();
+            return cards.Sum();
         }
             
     }
